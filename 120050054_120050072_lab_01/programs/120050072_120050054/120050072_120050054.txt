@@ -1,0 +1,189 @@
+										CS 377: OPERATING SYSTEMS LAB
+					   							Assignment 01  
+																		
+																		120050072	
+																		120050054
+
+
+
+Q1)		
+			/proc/cpuinfo   
+
+			contains the following information
+
+	a)	cache size      : 3072 KB
+		address sizes   : 36 bits physical, 48 bits virtual
+
+
+			/proc/cpuinfo   
+	b)	cpu family      : 6
+		model           : 58
+		model name      : Intel(R) Core(TM) i5-3210M CPU @ 2.50GHz
+		cpu cores       : 2
+
+			/proc/PID/limits
+
+	c) Max open files            1024                 4096                 files 
+
+	d)
+		Process-premption refers to sceduling a task .i.e, interrupt a process and give some other process run time and later resume the interrupted process without permission from the interrupted process.A more important task is performed before a less important by preempting the less important one.
+		If tasks are not preempted but inturn the CPU waits till one process finishes so that other process may be run this will turn out to be unfair and many important tasks may not be get done fastly.
+		Proper preempting in cases uses user and kernel mode where kernel is a given higher priority , because if kernel functions are
+		preeempted then many problems may occur.
+		Eg :Two processes waiting for each other.
+		A proper preempter's goal should be fair , efficient and have a high output of process completion .It should give more important processes the higher preference . It give all processes some amount of CPU time at any given time.
+
+Q2)
+	
+		
+		Solution : "/proc/[pid]/stat " gives status information about the process .
+		While ./first > /dev/null is being executed the result given by above command 
+		is :
+		7233 (first) R 5892 7233 5892 34840 7233 4218880 436 0 0 0 3315 31 0 0 20 0 1 0 
+		1132117 12824576 267 18446744073709551615 4194304 4197092 14073488
+		8757936 140734888757160 140386487972592 0 0 0 0 0 0 0 17 0 0 0 0 0 0 6295032 
+		6295656 23773184 140734888764192 140734888764200 140734888764200 1407 34888767472 0
+
+		In which 14 attribute gives  amount of time that this process has been scheduled
+		in user mode(measured in clock ticks) which is 3315 , 15 gives Amount of time that 
+		this process has been scheduled in kernel mode(in clock ticks) which is 31 from 
+		above information 
+
+		While ./second > /dev/null is being executed the result found is :
+
+		7370 (second) R 5892 7370 5892 34840 7370 4218880 481 0 1 0 3281 5 0 0 20 0 1 0 
+		1154145 12824576 332 18446744073709551615 4194304 4197276 14073533
+		6791744 140735336790888 139773970327531 0 0 0 0 0 0 0 17 1 0 0 1 0 0 6295016 
+		6295664 20500480 140735336796957 140735336796966 140735336796966 1407 35336800239 0
+
+		From above information the time in user modes is 3281(measured in clock ticks)
+		time in kernel mode is 5(measured in clock ticks) 
+
+		We observe that time spent by the kernel is lot more in the first case than in the 
+		second case . 
+
+		This is because more number of operations is done in first case(five multiplications 
+		in the first case and may be 3 in the second) and also may be because variable is
+		defined multiple times ( x and j are defined many times ).
+
+
+
+
+
+Q3)
+		3 a)
+
+			state indicates progress of the process .
+			Various kinds of process
+
+			R  Running
+			 
+			S  Sleeping in an interruptible wait
+
+			D  Waiting in uninterruptible disk sleep
+
+			Z  Zombie
+
+			T  Stopped (on a signal) or (before Linux 2.6.33)
+			   trace stopped
+
+			t  Tracing stop (Linux 2.6.33 onward)
+
+			W  Paging (only before Linux 2.6.0)
+
+			X  Dead (from Linux 2.6.0 onward)
+
+			x  Dead (Linux 2.6.33 to 3.13 only)
+
+			K  Wakekill (Linux 2.6.33 to 3.13 only)
+
+			W  Waking (Linux 2.6.33 to 3.13 only)
+
+			P  Parked (Linux 3.9 to 3.13 only)
+
+		3 b) 
+			use control + z to pull the process in 	traced or stopped (T) state
+
+
+
+
+Q4)			top is used for cpu %	
+
+		output_file_1   
+
+			a) 1012358454 
+			b) 100%
+			c)	voluntary_ctxt_switches:	9
+				nonvoluntary_ctxt_switches:	2867
+
+		output_file_2
+
+			a)961074603
+			b) 100%
+			c)	voluntary_ctxt_switches:	6
+				nonvoluntary_ctxt_switches:	2011
+
+		renice +20 <process PID>
+			a)997786665 
+			b)100%
+			c) voluntary_ctxt_switches:	19
+				nonvoluntary_ctxt_switches:	5005
+
+
+
+
+Q5)
+			/proc/loadavg or uptime
+
+		a)
+			Initial average loaad of the system -  load average:  0.39, 0.51, 0.40 		|  2/878 17929
+
+			Later load of the system - 		load average: 8.69, 6.60, 3.72		(Dindn't execute completely)
+
+					Stopped in the middle of program execution as sytem got hung .
+
+
+		Reasoning the last minute load averages 
+		initially th eload avg is 0.39 when not so much programs are running  and as the ques5.c is run 
+		the load increases to about 8.69 . that means all the CPU cores are fully functional and about 7.69 of the process are pending
+		had the CPU been 8.69 times faster the processes would hae been executed completely.
+
+
+		ques_new_5.c is the modified function
+
+
+Q6)
+			/proc/interrupt
+			SigQ:	0/62362
+			SigPnd:	0000000000000000
+			ShdPnd:	0000000000000000
+			SigBlk:	0000000000000080
+			SigIgn:	0000000000000000
+			SigCgt:	0000000000000080
+			CapInh:	0000000000000000
+			CapPrm:	0000000000000000
+			CapEff:	0000000000000000
+			CapBnd:	0000001fffffffff
+
+			SigCgt 0000 0000 0000 0000 0000 0000 1000 0000
+
+			hence 8 is the number of signal caught
+
+			a) Signal caught number 8
+
+			b) SIGFPE        8      Floating point exception
+
+			c) ./ques6.out is run
+				next the PID of ques6.out is found 
+				and view     /proc/<PID>/status
+
+				and the signal part is extracted
+
+				and hence we know signal generated is 8
+
+			 d) no
+			 
+
+
+
+
