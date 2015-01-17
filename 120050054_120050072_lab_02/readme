@@ -3,5 +3,5 @@ Pranay Dhondi(120050054)
 Haren Saga(120050072)
 
 to compile 
-g++ main02.cpp -o main02
-./main02
+g++ final.cpp -o final
+./final
