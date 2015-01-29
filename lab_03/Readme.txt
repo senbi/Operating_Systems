@@ -82,7 +82,7 @@ Any command not of the other forms is a file execution. If the file does not exi
 be treated as invalid. In such a case, an error is to be printed and the whole input line is to be
 discarded. Print all error messages to STDERR stream only.
 
-7. (BONUS) Sequential Execution (sequential_or)
+7.  Sequential Execution (sequential_or)
 Syntax: sequential_or <command 1> ::: <command 2> ::: … ::: <command n>
 ‘sequential_or’ executes commands sequentially, and in a way of the || operator in the bash or
 other shells. It is a lazy implementation of the boolean OR operator.
@@ -94,7 +94,7 @@ In this case, if ‘ls’ executes successfully (it most likely will) ‘echo ab
 Example 2: sequential invalid ::: echo abc
 In this case, since ‘invalid’ is not a valid command, ‘echo abc’ will be executed.
 
-8. (BONUS) Combined Commands
+8. Combined Commands
 Combined commands means two or more built-in commands put together. You will get additional
 credit if your program can handle such cases.
 Example 1: parallel ls ::: run run_file.txt ::: pwd
