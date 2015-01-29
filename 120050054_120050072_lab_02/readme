@@ -1,7 +1,3 @@
-Names:
-Pranay Dhondi(120050054)
-Haren Saga(120050072)
 
-to compile 
 g++ final.cpp -o final
 ./final
