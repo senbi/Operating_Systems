@@ -1,0 +1,6 @@
+struct sigaction sam2;
+			sam2.sa_flags=0;
+			sam2.sa_handler = SIG_DFL;
+			sigaction(SIGINT, &sam2,NULL);
+			sigaction(SIGQUIT, &sam2 ,NULL);
+			//sam.sa_handler = &child_handler;
