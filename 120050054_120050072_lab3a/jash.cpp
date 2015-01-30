@@ -16,16 +16,10 @@ using namespace std;
 int parent_pid,exitflag=0 ; // parent id is id of main process 
 char ** tokenize(char*) ;
 int execute_command(char** tokens) ;
-int seq_fail =0 ;
 const char * const path = "";
 
 void child_handler(int signum) //this the signal handler when child recieves any signal
 {
-	return ;
-}
-void seq_handler(int signum) // this is used to check whether there is an sequtial fail in system
-{
-	seq_fail=1;
 	return ;
 }
 
@@ -36,16 +30,6 @@ int main(int argc, char** argv){
 	sam.sa_handler = SIG_IGN;
 	sigaction(SIGINT, &sam,NULL);
 	sigaction(SIGQUIT, &sam ,NULL);
-	struct sigaction sam3;					// signal handler for sequential interrupt
-	sam3.sa_flags=0;
-	sam3.sa_handler = &seq_handler;
-	sigaction(SIGUSR1,&sam3,NULL);
-	//if (sigaction(SIGINT, &sam,NULL) == 0){
-	//	kill(-parent_pid,SIGQUIT);};
-	//sigaction(SIGQUIT, &sam ,NULL);
-	//if (sigaction(SIGQUIT, &sam,NULL) == 0){
-	//	kill(-parent_pid,SIGQUIT);};
-
 	/* Set (and define) appropriate signal handlers */
 	/* Exact signals and handlers will depend on your implementation */
 	// signal(SIGINT, quit);
@@ -155,8 +139,7 @@ int execute_command(char** tokens) {
 			//printf ("Changing directory to <%s>\n", tokens[1]);  
 			printf ("cd failed - %s\n", strerror (errno));
 			fflush(stdout);
-			seq_fail = 1;
-			//return 105;
+			return -1;
 		}else {
 		 //system("pwd");
 		 //printf ("Done \n");
@@ -210,7 +193,7 @@ int execute_command(char** tokens) {
 		/* Run jobs sequentially, print error on failure */
 		/* Stop on failure or if all jobs are completed */
 
-		int j=1;
+		int j=1,tag;
 		for(;tokens[j]!=NULL;j++)
 			{	
 				char command_now[MAXLINE];// =(char *)malloc(MAXLINE*sizeof(char));;
@@ -230,9 +213,10 @@ int execute_command(char** tokens) {
 				for(int i=0;tokens3[i]!=NULL;i++){
 						printf("\n",tokens3[i]);
 					}*/		
-
-				if (seq_fail==1){seq_fail=0;break;} //checking whether there is any sequential break ?
-				execute_command(tokens3);
+				tag = execute_command(tokens3);
+	//			cout<<"tag::"<<tag<<endl;
+				if (tag==-1){break;} //checking whether there is any sequential break ?
+				
 
 				int i ;
 					for(i=0;tokens3[i]!=NULL;i++){ // feeing the tokens 
@@ -245,17 +229,58 @@ int execute_command(char** tokens) {
 					
 				}				
 		return 0 ;					// Return value accordingly
-	} else {
+	}else if (!strcmp(tokens[0],"sequential_or")) {
+		/* Analyze the command to get the jobs */
+		/* Run jobs sequentially, print error on failure */
+		/* Stop on failure or if all jobs are completed */
+
+		int j=1,tag;
+		for(;tokens[j]!=NULL;j++)
+			{	
+				char command_now[MAXLINE];// =(char *)malloc(MAXLINE*sizeof(char));;
+				strcpy(command_now,"");
+				while(strcmp(tokens[j],":::")) // searching for commands between the tokens
+				{			
+						
+					 	strcat(command_now,tokens[j]);
+					 	strcat(command_now," ");
+					 	j++;
+					 	if (tokens[j]==NULL) break;				 
+				}
+				//printf("%s\n",command_now);
+				char ** tokens3;
+				tokens3 = tokenize(command_now); // tokenizing the obtained command
+				/*printf("%s\n",command_now);
+				for(int i=0;tokens3[i]!=NULL;i++){
+						printf("\n",tokens3[i]);
+					}*/		
+				tag = execute_command(tokens3);
+	//			cout<<"tag::"<<tag<<endl;
+				if (tag==0){break;} //checking whether there is any sequential break ?
+				
+
+				int i ;
+					for(i=0;tokens3[i]!=NULL;i++){ // feeing the tokens 
+						free(tokens3[i]);
+					}
+					free(tokens3);
+					
+					//free(command_now);
+					strcpy(command_now,"");
+					
+				}				
+		return 0 ;					// Return value accordingly
+	}
+	 else {
 		/* Either file is to be executed or batch file to be run */
 		/* Child process creation (needed for both cases) */
 		int pid = fork(),w ;
-		int *status;
+		int status=0;
 		if (pid == -1)
 		{
 			printf ("child execution - %s\n", strerror (errno));
 			fflush(stdout);
-			seq_fail = 1;
-			//return 110;
+			return -1;
 		}
 		if (pid == 0) {
 			pid_t parentid = parent_pid;
@@ -272,6 +297,12 @@ int execute_command(char** tokens) {
 				//system("pwd");
 				FILE *pfile;
 				pfile=fopen(tokens[1],"r");
+				if (pfile == NULL)
+				{
+					printf ("run failed - %s\n", strerror (errno));fflush(stdout);
+					//kill(parentid,SIGUSR1);
+					exit(-1);
+				}
 				char input2[MAXLINE];
 				char** tokens2;
 	
@@ -279,12 +310,8 @@ int execute_command(char** tokens) {
 					char *in2 = fgets(input2, MAXLINE, pfile); // Taking input one line at a time
 					//Checking for EOF
 						if (in2 == NULL){
-							if (DEBUG) {printf ("run failed - %s\n", strerror (errno));fflush(stdout);}
-							//seq_fail = 1;
-							kill(parentid,SIGUSR1);
+							
 							break;
-							//return 115;
-
 						}
 						// Calling the tokenizer function on the input line    
 						tokens2 = tokenize(input2);	
@@ -309,12 +336,9 @@ int execute_command(char** tokens) {
 				if (result == -1)
 				{
 					printf ("file execution - %s\n", strerror (errno)); 
-
-					//seq_fail = 1;
 					fflush(stdout);
-					kill(parentid,SIGUSR1);
-					//exit(0) ;
-					//return 120;
+					//kill(parentid,SIGUSR1);
+					exit(-1);
 				}
 				
 				exit(0) ;
@@ -324,8 +348,12 @@ int execute_command(char** tokens) {
 		else {
 			/* Parent Process */
 			/* Wait for child process to complete */
-			w = waitpid(pid, status, WUNTRACED | WCONTINUED);
-            
+			w = waitpid(pid, &status, WUNTRACED | WCONTINUED);
+		//	cout<<w<<":"<<WEXITSTATUS(status)<<endl;
+			 if(WEXITSTATUS(status) == 0){
+		//		cout<<"chid process failed\n";
+			 	return 0;
+             }else return -1;
 		}
 	}
 	return 1;
