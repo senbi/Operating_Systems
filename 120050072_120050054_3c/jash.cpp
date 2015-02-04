@@ -26,7 +26,7 @@ const char * const path = "";
 struct parseline{
 	int hour;
 	int minute;
-	char* commands;
+	char commands[MAXLINE];
 };
 int gettime(char* s){
 	if(!strcmp(s,"*"))return -1;
@@ -35,7 +35,7 @@ int gettime(char* s){
 }
 parseline* f(char* s){
 	char ** tokens = tokenize(s);
-	parseline* ans;
+	parseline* ans = new parseline;
 	ans->hour = gettime(tokens[0]);
 	ans->minute = gettime(tokens[1]);
 	strcpy(ans->commands,"");
@@ -92,6 +92,7 @@ int main(int argc, char** argv){
 		//Checking for EOF
 		if (in == NULL){
 			if (DEBUG) printf("jash: EOF found. Program will exit.\n");
+			kill(-getpgid(parent_pid),SIGTERM);
 			break ;
 		}
 
@@ -216,85 +217,12 @@ int execute_command(char** tokens) {
 			return 0;
 	}
 	 else if (!strcmp(tokens[0],"exit")) {
+	 	//cout<<getpid()<<endl;
+	 	kill(-getpid(), SIGTERM);
 		exitflag=1;
 		/* Quit the running process */
 		return 0 ;
-	} else if(contains(tokens,"|")){
-		//cout<<"contains | \n";
-		int fds[2];
-		int check = pipe (fds);
-		if(check == -1){
-			perror("in pipe");
-			exit(1);
-		}
-		//cout << "aaaaaaaaaaaa\n";
-		char command_now[MAXLINE];// =(char *)malloc(MAXLINE*sizeof(char));;
-		strcpy(command_now,"");
-		int j =0;
-		while(strcmp(tokens[j],"|")) //checking for ":::" token
-		{			
-				
-			 	strcat(command_now,tokens[j]);
-			 	strcat(command_now," ");
-			 	j++;
-			 	if (tokens[j]==NULL) break;				 
-		}
-		char ** tokens3; // this where we found the command we are tokenizeing in token3
-		tokens3 = tokenize(command_now);
-		/*for (int i = 0; tokens3[i] != NULL; ++i)
-		{
-			cout<<tokens3[i]<<endl;
-		}*/
-		strcpy(command_now,"");
-		j++;
-		while(tokens[j] != NULL) //checking for ":::" token
-		{			
-				
-			 	strcat(command_now,tokens[j]);
-			 	strcat(command_now," ");
-			 	j++;
-			 	if (tokens[j]==NULL) break;				 
-		}
-		char ** tokens4;
-		tokens4 = tokenize(command_now);
-		/*for (int i = 0; tokens4[i] != NULL; ++i)
-		{
-			cout<<tokens4[i]<<endl;
-		}*/
-		int pid_1, pid_2 ;
-		pid_1 = fork() ;
-		if (pid_1==0) // creating a new process for command obtained above
-		{
-			
-			close(fds[0]);
-			int verify = dup2 (fds[1], 1);
-			if(verify == -1){
-				perror("dup2 error");
-			}
-			//execvp(tokens3[0], tokens3);
-			execute_command(tokens3); //executing the command 
-			exit(0);
-		}
-		pid_2 = fork() ;
-		if (pid_2==0) // creating a new process for command obtained above
-		{
-			close (fds[1]);
-			int verify = dup2 (fds[0], 0);
-			if(verify == -1){
-				perror("dup2 error");
-			}
-			//execvp(tokens4[0], tokens4);
-			
-			execute_command(tokens4); //executing the command 
-			close(0);
-			exit(0);
-		}
-		close(fds[0]) ;
-		waitpid(-1,NULL,0);
-		close(fds[1]) ;
-		waitpid(-1,NULL,0);
-
-	} else if (!strcmp(tokens[0],"cd")) {
+	}  else if (!strcmp(tokens[0],"cd")) {
 		/* Change Directory, or print error on failure */
 		int ret;
 		ret=chdir (tokens[1]);
@@ -456,7 +384,7 @@ int execute_command(char** tokens) {
 							break;
 						}
 						// Calling the tokenizer function on the input line    
-						parseline* x ;
+						parseline* x  = new parseline;
 						x=f(in2);
 						myvector.push_back(x) ;
 				}
@@ -464,6 +392,7 @@ int execute_command(char** tokens) {
 
 				if (fork()==0)
 				{
+						signal(SIGCHLD,SIG_IGN);
 						while(1){
 						time_t mytime;
 	    				mytime = time(NULL);
@@ -495,7 +424,6 @@ int execute_command(char** tokens) {
 							
 							}
 							}
-
 							sleep(60);
 
 					}
@@ -504,6 +432,157 @@ int execute_command(char** tokens) {
 				}
 				
 		
+	}else if(contains(tokens,"|")){
+		//cout<<"contains | \n";
+		int fds[2];
+		int check = pipe (fds);
+		if(check == -1){
+			perror("in pipe");
+			exit(1);
+		}
+		//cout << "aaaaaaaaaaaa\n";
+		char command_now[MAXLINE];// =(char *)malloc(MAXLINE*sizeof(char));;
+		strcpy(command_now,"");
+		int j =0;
+		while(strcmp(tokens[j],"|")) //checking for ":::" token
+		{			
+				
+			 	strcat(command_now,tokens[j]);
+			 	strcat(command_now," ");
+			 	j++;
+			 	if (tokens[j]==NULL) break;				 
+		}
+		char ** tokens3; // this where we found the command we are tokenizeing in token3
+		tokens3 = tokenize(command_now);
+		/*for (int i = 0; tokens3[i] != NULL; ++i)
+		{
+			cout<<tokens3[i]<<endl;
+		}*/
+		strcpy(command_now,"");
+		j++;
+		while(tokens[j] != NULL) //checking for ":::" token
+		{			
+				
+			 	strcat(command_now,tokens[j]);
+			 	strcat(command_now," ");
+			 	j++;
+			 	if (tokens[j]==NULL) break;				 
+		}
+		char ** tokens4;
+		tokens4 = tokenize(command_now);
+		/*for (int i = 0; tokens4[i] != NULL; ++i)
+		{
+			cout<<tokens4[i]<<endl;
+		}*/
+		int pid_1, pid_2 ;
+		pid_1 = fork() ;
+		if (pid_1==0) // creating a new process for command obtained above
+		{
+			
+			close(fds[0]);
+			int verify = dup2 (fds[1], 1);
+			if(verify == -1){
+				perror("dup2 error");
+				exit(-1);
+			}
+			//execvp(tokens3[0], tokens3);
+			int errorrr =0,input=-1;
+			for(int i=0;tokens3[i]!=NULL;i++){
+					if (!strcmp(tokens3[i],"<"))
+					{  tokens3[i]=NULL; 
+						if (input!=-1) errorrr++;
+						input = i;
+						
+						//cout << "Workinf 123456789" << endl;
+					}
+				}
+			int fdsi;
+			 if (errorrr!=0)
+			{
+				fprintf(stderr,"More no of redirections\n");
+				exit(EXIT_FAILURE);
+			}		
+			
+				if (input!=-1)
+			{   
+				 fdsi =open(tokens3[input+1],O_RDONLY );
+				 if(fdsi < 0) {
+						 cout << "jash : "<<tokens[input+1]<<" : No such file\n";
+						 exit(-1);
+						 }	
+				dup2 (fdsi , STDIN_FILENO);
+			}
+			execute_command(tokens3); //executing the command 
+			if (input!=-1)
+				{   
+					close(fdsi);
+				}
+			exit(0);
+		}
+		pid_2 = fork() ;
+		if (pid_2==0) // creating a new process for command obtained above
+		{
+			close (fds[1]);
+			int verify = dup2 (fds[0], 0);
+			if(verify == -1){
+				perror("dup2 error");
+			}
+			//execvp(tokens4[0], tokens4);
+			int output =-1; //   >
+			int append =-1;  //  >>
+			int errorrr =0;
+			for(int i=0;tokens4[i]!=NULL;i++){
+				 if (!strcmp(tokens4[i],">"))
+				{
+					tokens4[i]=NULL; 
+					if (output!=-1) errorrr++;
+					output = i;
+										}
+				else if (!strcmp(tokens4[i],">>"))
+				{
+					tokens4[i]=NULL; 
+					if (append!=-1) errorrr++;
+					append = i;
+					
+				}
+			}
+			int fdsa,fdso;
+			if (errorrr!=0)
+			{
+				fprintf(stderr,"More no of redirections\n");
+				exit(EXIT_FAILURE);
+			}		
+			if (output!=-1)  // > 
+			{	
+				 fdso =open(tokens4[output+1],O_WRONLY|O_CREAT|O_TRUNC , S_IRWXU);					
+				dup2 (fdso, STDOUT_FILENO);
+			}
+			 if (append!=-1)
+			{	
+				 fdsa =open(tokens4[append+1],O_APPEND|O_WRONLY|O_CREAT , S_IRWXU);
+				dup2 (fdsa , STDOUT_FILENO);
+			}
+			int result = execute_command(tokens4); //executing the command 
+			if (output!=-1)  // > 
+			{	
+				close(fdso);
+			}
+			 if (append!=-1)
+			{	
+				close(fdsa);
+			}
+			if (result == -1)
+			{
+				exit(EXIT_FAILURE);
+			}
+			close(0);
+			exit(0);
+		}
+		close(fds[0]) ;
+		waitpid(-1,NULL,0);
+		close(fds[1]) ;
+		waitpid(-1,NULL,0);
+
 	}
 	 else {
 		/* Either file is to be executed or batch file to be run */
@@ -604,6 +683,9 @@ int execute_command(char** tokens) {
 					if (input!=-1)
 				{   
 					 fdsi =open(tokens[input+1],O_RDONLY );	
+					 if(fdsi < 0) {
+						 cout << "jash : "<<tokens[input+1]<<" : No such file\n";
+						 exit(-1);}
 					dup2 (fdsi , STDIN_FILENO);
 				}
 				if (output!=-1)  // > 
@@ -640,7 +722,9 @@ int execute_command(char** tokens) {
 
 					//seq_fail = 1;
 					fflush(stdout);
-					kill(parentid,SIGUSR1);
+					//
+
+					//kill(parentid,SIGUSR1);
 					exit(EXIT_FAILURE);
 					//exit(0) ;
 					//return 120;
