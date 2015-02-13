@@ -29,7 +29,7 @@ int Wait(int pid);
 int Get_PID(void);
 int PS(struct Process_Info *ptable, int len);
 int WaitNoPID(int *status);
-
+int getNoOfCalls(void);
 int Fork(void);
 int Clone(void (*func) (void), void *stack);
 int Execl(const char *program, const char *command);

@@ -48,6 +48,7 @@ static void GPF_Handler(struct Interrupt_State *state) {
  * System call handler.
  */
 static void Syscall_Handler(struct Interrupt_State *state) {
+    //increasing the system call count;
     /* The system call number is specified in the eax register. */
     uint_t syscallNum = state->eax;
 
@@ -68,6 +69,7 @@ static void Syscall_Handler(struct Interrupt_State *state) {
      * Call the appropriate syscall function.
      * Return code of system call is returned in EAX.
      */
+    CURRENT_THREAD->nSystemCalls++;
     state->eax = g_syscallTable[syscallNum] (state);
 }
 

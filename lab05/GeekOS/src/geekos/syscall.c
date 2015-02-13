@@ -375,7 +375,9 @@ static int Sys_WaitNoPID(struct Interrupt_State *state) {
     TODO_P(PROJECT_SIGNALS, "Sys_WaitNoPID system call");
     return EUNSUPPORTED;
 }
-
+static int Sys_NoOfCalls(struct Interrupt_State *state){
+	return CURRENT_THREAD->nSystemCalls;
+}
 /*
  * Set the scheduling policy.
  * Params:
@@ -399,6 +401,11 @@ static int Sys_GetTimeOfDay(struct Interrupt_State *state
                             __attribute__ ((unused))) {
     return g_numTicks;
 }
+static int Sys_NewTOD(struct Interrupt_State *state){
+	int i = g_numTicks;
+	Copy_To_User(state->ebx, &i, sizeof(int));
+	return 0;
+}			
 
 /*
  * Mount a filesystem.
@@ -993,9 +1000,11 @@ const Syscall g_syscallTable[] = {
     Sys_RegDeliver,
     Sys_ReturnSignal,
     Sys_WaitNoPID,
+    Sys_NoOfCalls,
     /* Scheduling and semaphore system calls. */
     Sys_SetSchedulingPolicy,
     Sys_GetTimeOfDay,
+    Sys_NewTOD,			/* To get Current time directly to user value */
     Sys_Open_Semaphore,
     Sys_P,
     Sys_V,

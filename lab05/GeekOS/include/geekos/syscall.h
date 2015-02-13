@@ -60,8 +60,10 @@ enum {
     SYS_REGDELIVER,             /* Register user-space handler routines */
     SYS_RETURNSIG,              /* Called when signal handler is done executing */
     SYS_WAITNOPID,              /* Like Wait, but doesn't require a PID. */
+    SYS_NOOFCALLS,		/* get no of system calls made by a process */
     SYS_SETSCHEDULINGPOLICY,    /* Set scheduler policy system call  */
     SYS_GETTIMEOFDAY,           /* Get time of day system call  */
+    SYS_NEWTOD,			/* To get Current time directly to user value */
     SYS_OPEN_SEMAPHORE,         /* Create semaphore system call  */
     SYS_P,                      /* P (acquire semaphore) system call  */
     SYS_V,                      /* V (release semaphore) system call  */

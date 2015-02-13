@@ -112,6 +112,7 @@ static void Init_Thread(struct Kernel_Thread *kthread, void *stackPage,
     kthread->detached = detached;
     kthread->priority = priority;
     kthread->userContext = 0;
+    kthread->nSystemCalls=0;
     kthread->owner = owner;
     kthread->affinity = AFFINITY_ANY_CORE;
     kthread->totalTime = 0;

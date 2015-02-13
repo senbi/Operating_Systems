@@ -66,7 +66,7 @@ struct Kernel_Thread {
     bool alive;
     struct Thread_Queue joinQueue;
     int exitCode;
-
+    int nSystemCalls; /*** the number of system calls */
     /* Link fields for list of all threads in the system. */
      DEFINE_LINK(All_Thread_List, Kernel_Thread);
 

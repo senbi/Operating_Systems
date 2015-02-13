@@ -37,6 +37,7 @@ DEF_SYSCALL(Get_PID, SYS_GETPID, int, (void),, SYSCALL_REGS_0)
                 , SYSCALL_REGS_2)
 DEF_SYSCALL(WaitNoPID, SYS_WAITNOPID, int, (int *status), int *arg0 = status;
             , SYSCALL_REGS_1)
+DEF_SYSCALL(getNoOfCalls, SYS_NOOFCALLS, int, (void),, SYSCALL_REGS_0)
 DEF_SYSCALL(ShutDown, SYS_SHUTDOWN, int, (void),, SYSCALL_REGS_0)
 
 DEF_SYSCALL(Fork, SYS_FORK, int, (void),, SYSCALL_REGS_0)

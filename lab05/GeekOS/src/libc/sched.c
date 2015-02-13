@@ -16,7 +16,7 @@ DEF_SYSCALL(Set_Scheduling_Policy, SYS_SETSCHEDULINGPOLICY, int,
             int arg1 = quantum;
             , SYSCALL_REGS_2)
 DEF_SYSCALL(Get_Time_Of_Day, SYS_GETTIMEOFDAY, int, (void),, SYSCALL_REGS_0)
-
+DEF_SYSCALL(Get_NewTOD,SYS_NEWTOD,void,(int* xyz),int* arg0 = xyz;,SYSCALL_REGS_1)
  DEF_SYSCALL(Alarm, SYS_ALARM, int, (unsigned int mseconds),
              unsigned int arg0 = mseconds;
              , SYSCALL_REGS_1)

@@ -23,7 +23,7 @@ int Get_Time_Of_Day(void);
 
 int Set_Affinity(int pid, int core);
 int Get_Affinity(int pid);
-
+void Get_NewTOD(int *milliseconds);
 int Alarm(unsigned int microSeconds);
 
 #endif /* SCHED_H */
